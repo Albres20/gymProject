@@ -5,6 +5,12 @@ import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 
 //segun java persistence query lenguage
 @NamedQuery(name="user.findByEmailId", query = "select u from user u where u.email=:email")
@@ -14,7 +20,7 @@ import org.hibernate.annotations.DynamicUpdate;
 @DynamicUpdate
 @DynamicInsert
 @Table(name="user")
-public class user {
+public class user implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -40,6 +46,10 @@ public class user {
     @Column(name="rol")
     private String rol;
 
+    /*public boolean vigencia;*/
+
+   /* public user(String email, String password, ArrayList<Object> objects) {
+    }*/
 
 
 }

@@ -27,9 +27,12 @@ public class userServiceImpl implements userService {
     @Override
     public ResponseEntity<String> signup(Map<String, String> requestMap) {
         log.info("Dentro de registrarse:", requestMap);
+        System.out.println("here antes de try");
         try {
             if(validateSignUpMap(requestMap)){
                 user user=userDAO.findByEmailId(requestMap.get("email"));
+
+                System.out.println("here");
                 if(Objects.isNull(user)){
                     userDAO.save(getUserFromMap(requestMap));
                     return gymUtils.getResponseEntity("Registrado exitosamente", HttpStatus.OK);
