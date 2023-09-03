@@ -5,6 +5,7 @@ import com.example.gimnasio.dao.userDAO;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -26,6 +27,7 @@ public class CustomerUsersDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         log.info("Inside loadUserByUsername", username); //Registro de información utilizando SLF4J
         userDetail=userDao.findByEmailId(username);//Obtención de los detalles del usuario a través de userDAO
+        System.out.println("---->"+userDetail);
         if(!Objects.isNull(userDetail)){
             //Si los detalles del usuario no son nulos, se crea y devuelve un objeto UserDetails con los datos del usuario
             return new User(userDetail.getEmail(), userDetail.getPassword(), new ArrayList<>());
@@ -39,6 +41,9 @@ public class CustomerUsersDetailsService implements UserDetailsService {
     }
     // Método para obtener los detalles del usuario
     public com.example.gimnasio.POJO.user getUserDetail(){
+        /*
+        com.example.gimnasio.POJO.user user=userDetail;
+        user.setPassword(null);*/
         return userDetail;
     }
 

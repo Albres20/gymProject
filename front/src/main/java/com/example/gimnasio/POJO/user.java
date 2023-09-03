@@ -46,6 +46,8 @@ public class user implements Serializable {
     @Column(name="rol")
     private String rol;
 
+
+
     /*public boolean vigencia;*/
 
    /* public user(String email, String password, ArrayList<Object> objects) {

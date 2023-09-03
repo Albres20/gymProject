@@ -27,4 +27,17 @@ public class userRestImpl implements userRest {
         }
         return gymUtils.getResponseEntity(gymConstants.ALGO_SALIO_MAL, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @Override
+    public ResponseEntity<String> login(Map<String, String> requestMap) {
+        try {
+            return userService.login(requestMap);
+
+
+        }
+        catch (Exception ex){
+            ex.printStackTrace();
+        }
+        return gymUtils.getResponseEntity(gymConstants.ALGO_SALIO_MAL, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }
