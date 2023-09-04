@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -21,6 +22,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -30,17 +33,22 @@ import java.util.Objects;
 
 @Slf4j
 @Service
-public class userServiceImpl implements userService {
+public class userServiceImpl implements userService{
 
     @Autowired
     userDAO userDAO;
+
     @Autowired
+    @Lazy
     AuthenticationManager authenticationManager;
     @Autowired
     CustomerUsersDetailsService customerUsersDetailsService;
     @Autowired
     JwtUtil jwUtil;
-    @Override
+    @Autowired
+    @Lazy
+    private PasswordEncoder passwordEncoder;
+    /*@Override
     public ResponseEntity<String> signup(Map<String, String> requestMap) {
         log.info("Dentro de registrarse:", requestMap);
 
@@ -69,8 +77,44 @@ public class userServiceImpl implements userService {
         return gymUtils.getResponseEntity(gymConstants.INVALID_DATA, HttpStatus.BAD_REQUEST);
 
 
+    }*/
+    //*------------------------new---start
+    public ResponseEntity<String> signup(Map<String, String> requestMap) {
+        log.info("Entrando en el método signup para el usuario con email: {}", requestMap.get("email"));
+
+        try {
+            if (validateSignUpMap(requestMap)) {
+                String email = requestMap.get("email");
+                user existingUser = userDAO.findByEmailId(email);
+
+                if (existingUser == null) {
+                    String rawPassword = requestMap.get("password");
+                    String encodedPassword = encodePassword(rawPassword); // Utiliza BCrypt para cifrar la contraseña
+
+                    user newUser = getUserFromMap(requestMap);
+                    newUser.setPassword(encodedPassword);
+
+                    userDAO.save(newUser);
+
+                    return gymUtils.getResponseEntity("Registrado exitosamente", HttpStatus.OK);
+                } else {
+                    return gymUtils.getResponseEntity("El correo ya está registrado.", HttpStatus.BAD_REQUEST);
+                }
+            } else {
+                return gymUtils.getResponseEntity("Error: Los datos proporcionados son incorrectos o faltantes.", HttpStatus.BAD_REQUEST);
+            }
+        } catch (Exception ex) {
+            log.error("Error al registrar un nuevo usuario:", ex);
+            return gymUtils.getResponseEntity("Error interno del servidor al registrar un nuevo usuario.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
+    // Método para cifrar la contraseña usando BCrypt
+    private String encodePassword(String rawPassword) {
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        return passwordEncoder.encode(rawPassword);
+    }
+    //// new --------------------end
     @Override
     public ResponseEntity<String> login(Map<String, String> requestMap) {
         log.info("Inside login");
@@ -81,6 +125,7 @@ public class userServiceImpl implements userService {
             System.out.println("------------------------------------------------"+auth+">---");
             if(auth.isAuthenticated()){
                 if(customerUsersDetailsService.getUserDetail().getStatus().equalsIgnoreCase("true")){
+                    System.out.println("token exitoso");
 
                     return new ResponseEntity<String>("{\"token\":\""+jwUtil.generateToken(customerUsersDetailsService.getUserDetail().getEmail(), customerUsersDetailsService.getUserDetail().getRol())+"\"}",
                     HttpStatus.OK);
@@ -97,11 +142,21 @@ public class userServiceImpl implements userService {
     }
 
     @Override
-    public UserDetailsService userDetailsService() {
+    public UserDetailsService userDetailsService() {/*
         return new UserDetailsService() {
             @Override
             public UserDetails loadUserByUsername(String username) {
                 return (UserDetails) userDAO.findByEmailId(username);
+            }
+        };*/
+        return new UserDetailsService() {
+            @Override
+            public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+                UserDetails userDetails = customerUsersDetailsService.loadUserByUsername(username);
+                if (userDetails == null) {
+                    throw new UsernameNotFoundException("User not found");
+                }
+                return userDetails;
             }
         };
     }

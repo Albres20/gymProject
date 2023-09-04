@@ -66,7 +66,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             }
             // 4. Validar el token y autenticar al usuario
             if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
+                System.out.println("intento validar token");
                 UserDetails userDetails = userDetailsService.loadUserByUsername(jwtUtil.extracUsername(token));
 
 

@@ -17,6 +17,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import com.example.gimnasio.service.userService;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -26,8 +27,9 @@ public class SecurityConfig   {
 /*permite configurar las solicitudes con autenticacion y sin autentificacion*/
     @Autowired
     CustomerUsersDetailsService customerUsersDetailsService;
+
     @Autowired
-    ApplicationConfig userService;
+    userService userService;
 /*
     private final userServiceImpl userService;*/
     @Autowired
@@ -35,7 +37,7 @@ public class SecurityConfig   {
     @Autowired
     JwtAuthenticationEntryPoint unauthorizedHandler;
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(customerUsersDetailsService);
+        auth.userDetailsService(customerUsersDetailsService).passwordEncoder(passwordEncoder());
     }
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
@@ -74,11 +76,11 @@ public class SecurityConfig   {
         authProvider.setUserDetailsService(userService.userDetailsService());
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
-    }
+    }/*
     @Bean
     public AuthenticationManager securityAuthenticationManager(AuthenticationConfiguration config)
             throws Exception {
         return config.getAuthenticationManager();
-    }
+    }*/
 
 }
